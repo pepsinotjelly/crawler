@@ -30,12 +30,7 @@ class TutorialSpider(CrawlSpider, ABC):
 
     def parse_item(self, response):
         print(response)
-        # books_list = response.xpath('//div[@class="indent"]')
-        # books_list = books_list.xpath('//div[@class="indent"]')
         book_list = response.xpath('//tr[@class="item"]')
-        # for books_item in books_list:
-            # books_item = books_item.xpath('//tr[@class="item"]')
-        # print("-----------------------------------------")
         for book_item in book_list:
             book = BookItem()
             book['name'] = book_item.xpath('//div[@class="pl2"]/a/@title').get()
