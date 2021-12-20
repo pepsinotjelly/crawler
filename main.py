@@ -10,8 +10,7 @@ def print_hi(name):
     print(f'Hi, {name}')
 
     if __name__ == '__main__':
-        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        execute(['scrapy', 'crawl', 'books_item'])
+        print('Hello Sonia!')
 
 
 if __name__ == '__main__':
