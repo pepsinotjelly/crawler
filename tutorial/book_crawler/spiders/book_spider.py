@@ -6,12 +6,21 @@
 @Date    ：2021/12/13 12:55 PM
 @Desc    ：
 """
+import copy
 from abc import ABC
 
 import scrapy
 from scrapy.spiders import Rule, CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 from tutorial.book_crawler.items import BookItem
+
+
+def image_filter(image_list):
+    image_list_v2 = copy.deepcopy(image_list)
+    for i in range(len(image_list)):
+        if image_list[i] == '/pics/read.gif':
+            image_list_v2.remove(image_list[i])
+    return image_list_v2
 
 
 class TutorialSpider(CrawlSpider, ABC):
@@ -24,11 +33,12 @@ class TutorialSpider(CrawlSpider, ABC):
     def parse_item(self, response):
         item_list = response.xpath('//div[@class="indent"]')
         book_item = item_list.xpath('//tr[@class="item"]')
+
         name_list = book_item.xpath('//div[@class="pl2"]/a/@title').extract()
         info_list = book_item.xpath('//p[@class="pl"]/text()').extract()  # 出版信息
         star_list = book_item.xpath('//span[@class="rating_nums"]/text()').extract()  # 星级
         quote_list = book_item.xpath('//span[@class="inq"]/text()').extract()
-        image_list = book_item.xpath('//img/@src').extract()
+        image_list = image_filter(book_item.xpath('//img/@src').extract())
 
         for i in range(len(book_item)):
             book = BookItem()
@@ -38,5 +48,3 @@ class TutorialSpider(CrawlSpider, ABC):
             book['quote'] = quote_list[i]
             book['image'] = image_list[i]
             yield book
-
-
