@@ -55,7 +55,7 @@ def cookie_reader(url):
 
 
 def picture_reader(data, page):
-    patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg2'
+    patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg'
     pat = re.compile(patten)
     img_urls = re.findall(pat, str(data))
     print(img_urls)
