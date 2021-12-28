@@ -1,4 +1,4 @@
-from request_book.book_request.request_demo import do_request
+from request_book.book_request.data_collection import do_request
 
 
 def print_hi(name):
