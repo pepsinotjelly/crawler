@@ -12,7 +12,7 @@ from abc import ABC
 import scrapy
 from scrapy.spiders import Rule, CrawlSpider
 from scrapy.linkextractors import LinkExtractor
-from tutorial.book_crawler.items import BookItem
+from scrapy_example.book_crawler.items import BookItem
 
 
 def image_filter(image_list):

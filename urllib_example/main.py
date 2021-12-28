@@ -1,4 +1,4 @@
-from request_book.book_request.data_collection import do_request
+from urllib_example.crawler import do_request
 
 
 def print_hi(name):

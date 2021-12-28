@@ -7,9 +7,9 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
-from tutorial.book_crawler import settings
+from scrapy_example.book_crawler import settings
 
-from tutorial.book_crawler.items import BookItem
+from scrapy_example.book_crawler.items import BookItem
 
 image_store = settings.IMAGES_STORE
 
