@@ -100,7 +100,3 @@ def do_request(is_write, if_proxy):
             use_proxy(is_write, page)
         else:
             use_demo(is_write, page)
-
-# do_write = False  # 是否重写本地文件,True时重写本地.html文件，False时跳过。
-# if_use_cookie = False  # 是否创造cookie，True时重写本地cookie.txt文件，False时跳过。
-# if_use_proxy = False
