@@ -5,7 +5,7 @@ def print_hi(name):
     print(f'Hi, {name}')
 
     if __name__ == '__main__':
-        do_request(is_write=False, if_cookie=False, if_proxy=True)
+        do_request(is_write=False, if_proxy=True)
 
 
 if __name__ == '__main__':

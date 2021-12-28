@@ -3,9 +3,10 @@ import urllib.error
 import http.cookiejar
 from urllib.request import Request, urlopen
 
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+             'Chrome/96.0.4664.110 Safari/537.36 '
 HEADER = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/96.0.4664.110 Safari/537.36',
+    'User-Agent': USER_AGENT,
     'Referer': 'https://book.douban.com/top250',
     'Cookie': 'bid=fLAdqpnsfRE; __utmc=30149280; __utmc=81379588; '
               '__utmz=30149280.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; '
@@ -36,35 +37,25 @@ def request_demo(page=0):
     return request
 
 
-def cookie_maker(request):
-    filename = RESOURCE_PATH + '/cookie.txt'
-    cookie = http.cookiejar.LWPCookieJar(filename)
-    handler = urllib.request.HTTPCookieProcessor(cookie)
-    opener = urllib.request.build_opener(handler)
-    response = opener.open(request)
-    cookie.save(ignore_discard=True, ignore_expires=True)
-
-
-def cookie_reader(url):
-    cookie = http.cookiejar.LWPCookieJar()
-    cookie.load(RESOURCE_PATH + '/cookie.txt', ignore_discard=True, ignore_expires=True)
-    handler = urllib.request.HTTPCookieProcessor(cookie)
-    opener = urllib.request.build_opener(handler)
-    response = opener.open(url)
-    return response
-
-
-def picture_reader(data, page):
+def picture_loader(data, page):
     patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg'
     pat = re.compile(patten)
     img_urls = re.findall(pat, str(data))
     print(img_urls)
     print(len(img_urls))
+    opener = urllib.request.build_opener()
+    opener.addheaders = [('User-Agent', USER_AGENT)]
+    urllib.request.install_opener(opener)
     for img in range(len(img_urls)):
-        print("第%d张图片地址：%s" % (img, img_urls[img]))
-        print("开始下载第%d张。。。" % img)
-        urllib.request.urlretrieve(img_urls[img], RESOURCE_PATH+"book_img/img_" + str(page) + "_" + str(img)+".jpg")
-        print("下载成功\n======================")
+        print("Downloading Picture No.%d with url:%s" % (img, img_urls[img]))
+        try:
+            urllib.request.urlretrieve(img_urls[img],
+                                       RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+        except urllib.error.HTTPError as e:
+            print(e.headers)
+            urllib.request.urlretrieve(img_urls[img],
+                                       RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+        print("Success!")
 
 
 def use_proxy(is_write, page):
@@ -82,27 +73,16 @@ def use_proxy(is_write, page):
     use_demo(is_write, page)
 
 
-def use_cookie(is_write, page):
-    request = request_demo(page)
-    cookie_maker(request)
-    cookie = http.cookiejar.LWPCookieJar()
-    cookie.load(RESOURCE_PATH+'cookie.txt', ignore_discard=True, ignore_expires=True)
-    handler = urllib.request.HTTPCookieProcessor(cookie)
-    opener = urllib.request.build_opener(handler)
-    response = opener.open(url_maker(page))
-    return response
-
-
 def use_demo(is_write, page):
     request = request_demo(page)
     try:
         response = urlopen(request)
         html = response.read()
         if is_write:
-            f = open(RESOURCE_PATH+"book_response/bookList_" + str(page) + ".html", "wb")
+            f = open(RESOURCE_PATH + "book_response/bookList_" + str(page) + ".html", "wb")
             f.write(html)
             f.close
-        picture_reader(html, page)
+            picture_loader(html, page)
         print(response.geturl())
         print(response.getcode())
         print(response.info())
@@ -113,19 +93,14 @@ def use_demo(is_write, page):
         print(e.headers)
 
 
-def do_request(is_write, if_cookie, if_proxy):
-    page = 0
+def do_request(is_write, if_proxy):
     for i in range(10):
         page = i * 25
         if if_proxy:
             use_proxy(is_write, page)
-        elif if_cookie:
-            use_cookie(is_write, page)
         else:
             use_demo(is_write, page)
-
 
 # do_write = False  # 是否重写本地文件,True时重写本地.html文件，False时跳过。
 # if_use_cookie = False  # 是否创造cookie，True时重写本地cookie.txt文件，False时跳过。
 # if_use_proxy = False
-
