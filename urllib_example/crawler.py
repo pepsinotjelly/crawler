@@ -3,6 +3,8 @@ import re
 import urllib.error
 import http.cookiejar
 from urllib.request import Request, urlopen
+from urllib.parse import urlparse
+import utils
 
 import xlwt
 from bs4 import BeautifulSoup
@@ -11,13 +13,115 @@ from urllib_example.items import BookItem
 
 
 class Crawler:
+    wait_pool = set()
+    used_pool = set()
+    is_write = False
+    is_online_data = False
+
+    def __init__(self, is_write, is_online_data):
+        self.wait_pool.add('https://book.douban.com/top250')
+        self.used_pool.clear()
+        self.is_write = is_write
+        self.is_online_data = is_online_data
+        print("==========================INIT DONE==========================")
+
     def start(self):
-        pass
+        print("========================REQUEST START========================")
+        while len(self.wait_pool) > 0:
+            self.send_request(is_write=self.is_write)
 
-    def request(self):
-        pass
+    def create_url(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        for i in range(len(soup.find_all('div', class_='paginator'))):
+            url = soup.find_all('div', class_='paginator')[0].find_all('span', class_='next')[0].find('a').attrs['href']
+            return url
 
-    def download(self, book_list, SAVE_PATH="./resource/book_data.xls"):
+    def batch_create_url(self, html):
+        url_set = set()
+        soup = BeautifulSoup(html, 'html.parser')
+        for i in range(len(soup.find_all('div', class_='paginator')[0].find_all('a'))):
+            url = soup.find_all('div', class_='paginator')[0].find_all('a')[i].attrs['href']
+            url_set.add(url)
+        return url_set
+
+    def check_pool(self):
+        if not self.wait_pool:
+            return None
+        url = self.wait_pool.pop()  # 待爬池url减少
+        self.used_pool.add(url)  # 记录已经爬取的url
+        return url
+
+    def update_pool(self, html):
+        url_set = self.batch_create_url(html)
+        for url in self.used_pool.intersection(url_set):
+            url_set.discard(url)
+        self.wait_pool.update(url_set)
+
+    def send_request(self, is_write):
+        url = self.check_pool()
+        if url is None:
+            print("pool error,please check wait_pool!")
+            return
+        request = Request(url, headers=HEADER)
+        self.create_proxy()
+        page = utils.parse_number(urlparse(url).query)
+        try:
+            response = urlopen(request)
+            html = response.read()
+            if is_write==True:
+                self.download_page(html=html, page=page)
+                self.download_picture(data=html, page=page)
+            self.update_pool(html)
+            print(response.geturl())
+            print(response.getcode())
+            print(response.info())
+            response.close()
+        except urllib.error.HTTPError as e:
+            response.close()
+            print(e.reason)
+            print(e.code)
+            print(e.headers)
+
+    def create_proxy(self):
+        proxy_handler = urllib.request.ProxyHandler({
+            'http': '218.78.22.146:443',
+            'http': '223.100.166.3',
+            'http': '113.254.178.224',
+            'http': '115.29.170.58',
+            'http': '117.94.222.233'
+        })
+        opener = urllib.request.build_opener(proxy_handler)
+        urllib.request.install_opener(opener)
+
+    def download_page(self, html, page):
+        if page is None or page == '':
+            return
+        f = open(RESOURCE_PATH + "new_book_response/bookList_" + str(page) + ".html", "wb")
+        f.write(html)
+        f.close
+
+    def download_picture(self, data, page):
+        if page is None or page == '':
+            return
+        patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg'
+        pat = re.compile(patten)
+        img_urls = re.findall(pat, str(data))
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-Agent', USER_AGENT)]
+        urllib.request.install_opener(opener)
+        for img in range(len(img_urls)):
+            print("Downloading Picture No.%d with url:%s" % (img, img_urls[img]))
+            try:
+                urllib.request.urlretrieve(img_urls[img],
+                                           RESOURCE_PATH + "new_book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+            except urllib.error.HTTPError as e:
+                print(e.headers)
+                urllib.request.urlretrieve(img_urls[img],
+                                           RESOURCE_PATH + "new_book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+            print("===========================SUCCESS===========================")
+
+    def download_item(self, SAVE_PATH="./book_request/resource/book_data.xls"):
+        book_list = self.parse_item()
         workbook = xlwt.Workbook(encoding="utf-8", style_compression=0)
         sheet = workbook.add_sheet("豆瓣读书top250", cell_overwrite_ok=True)
         sheet.write(0, 0, 'number')
@@ -27,7 +131,7 @@ class Crawler:
         sheet.write(0, 4, 'quote')
         sheet.write(0, 5, 'reader')
         for i in range(len(book_list)):
-            print("saving No.%d" % (i + 1))
+            print("=======================SAVING NO.%d=========================" % (i + 1))
             book = book_list[i]
             sheet.write(i + 1, 0, i + 1)
             sheet.write(i + 1, 1, book.name)
@@ -37,37 +141,27 @@ class Crawler:
             sheet.write(i + 1, 5, book.reader)
         workbook.save(SAVE_PATH)
 
-    def parse_item(self, RESOURCE_ROOT):
+    def parse_item(self, RESOURCE_ROOT='./book_request/resource/book_response/'):
         booklist = []
-        count = 0
         for data in os.listdir(RESOURCE_ROOT):
-            print("parsing page:---------------------------------------", count)
-            print("filename:---------------------------", data)
-            count += 1
             with open(RESOURCE_ROOT + data, 'r', encoding='UTF-8') as f:
                 soup = BeautifulSoup(f.read(), 'html.parser')
                 for i in range(len(soup.find_all('tr', class_='item'))):
                     book = BookItem()
                     book.name = \
-                    soup.find_all('tr', class_='item')[i].find_all('div', class_='pl2')[0].find('a').text.strip().split(
-                        ' ')[0].strip()
+                        soup.find_all('tr', class_='item')[i].find_all('div', class_='pl2')[0].find(
+                            'a').text.strip().split(
+                            ' ')[0].strip()
                     book.info = soup.find_all('tr', class_='item')[i].find_all('p', class_='pl')[0].text
                     book.star = soup.find_all('tr', class_='item')[i].find_all('span', class_='rating_nums')[0].text
                     if soup.find_all('tr', class_='item')[i].find_all('span', class_='inq'):
                         book.quote = soup.find_all('tr', class_='item')[i].find_all('span', class_='inq')[0].text
                     else:
                         book.quote = ""
-                    book.reader = self.parse_number(
+                    book.reader = utils.parse_number(
                         soup.find_all('tr', class_='item')[i].find_all('span', class_='pl')[0].text)
                     booklist.append(book)
         return booklist
-
-    def parse_number(self,target):
-        res = ''
-        for i in range(len(target)):
-            if '0' <= target[i] <= '9':
-                res += target[i]
-        return res.strip()
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' \
@@ -86,84 +180,3 @@ HEADER = {
               '_pk_id.100001.3ac3=021988dc59405135.1640066250.4.1640579466.1640324096. '
 }
 RESOURCE_PATH = './book_request/resource/'
-
-
-def url_maker(page=0):
-    origin_url = "https://book.douban.com/top250"
-    form_data = {
-        'start': page
-    }
-    data = urllib.parse.urlencode(form_data)
-    url = origin_url + '?' + data
-    return url
-
-
-def request_demo(page=0):
-    url = url_maker(page)
-    request = Request(url, headers=HEADER)
-    return request
-
-
-def download_picture(data, page):
-    patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg'
-    pat = re.compile(patten)
-    img_urls = re.findall(pat, str(data))
-    print(img_urls)
-    print(len(img_urls))
-    opener = urllib.request.build_opener()
-    opener.addheaders = [('User-Agent', USER_AGENT)]
-    urllib.request.install_opener(opener)
-    for img in range(len(img_urls)):
-        print("Downloading Picture No.%d with url:%s" % (img, img_urls[img]))
-        try:
-            urllib.request.urlretrieve(img_urls[img],
-                                       RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
-        except urllib.error.HTTPError as e:
-            print(e.headers)
-            urllib.request.urlretrieve(img_urls[img],
-                                       RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
-        print("Success!")
-
-
-def use_proxy(is_write, page):
-    # 创建代理
-    proxy_handler = urllib.request.ProxyHandler({
-        'http': '218.78.22.146:443',
-        'http': '223.100.166.3',
-        'http': '113.254.178.224',
-        'http': '115.29.170.58',
-        'http': '117.94.222.233'
-    })
-    # 创建opener
-    opener = urllib.request.build_opener(proxy_handler)
-    urllib.request.install_opener(opener)
-    use_demo(is_write, page)
-
-
-def use_demo(is_write, page):
-    request = request_demo(page)
-    try:
-        response = urlopen(request)
-        html = response.read()
-        if is_write:
-            f = open(RESOURCE_PATH + "book_response/bookList_" + str(page) + ".html", "wb")
-            f.write(html)
-            f.close
-            download_picture(html, page)
-        print(response.geturl())
-        print(response.getcode())
-        print(response.info())
-        response.close()
-    except urllib.error.HTTPError as e:
-        print(e.reason)
-        print(e.code)
-        print(e.headers)
-
-
-def do_request(is_write, if_proxy):
-    for i in range(10):
-        page = i * 25
-        if if_proxy:
-            use_proxy(is_write, page)
-        else:
-            use_demo(is_write, page)
