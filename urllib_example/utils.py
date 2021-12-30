@@ -1,13 +1,19 @@
 import matplotlib.pyplot as plt
 import pandas
+import numpy as np
+import scipy.stats as ss
+import seaborn as sns
+
 import xlrd
 
 
 def show(RESOURCE_ROOT="./book_request/resource/"):
+    print("======================PAINTING PICTURE=======================")
     data = pandas.read_excel(RESOURCE_ROOT + 'book_data.xls')
     x1 = data['number']
     y1 = data['star']
     y2 = data['reader']
+    y3 = data['star'] / data['reader']
     plt.figure(figsize=(16, 8), dpi=80)
     plt.subplot(111)
     plt.plot(x1, y1, color='blue', linewidth=3, linestyle='solid', label='star')

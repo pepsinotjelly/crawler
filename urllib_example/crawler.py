@@ -8,21 +8,19 @@ import utils
 
 import xlwt
 from bs4 import BeautifulSoup
-
+from config.config import HEADER, RESOURCE_PATH, USER_AGENT
 from urllib_example.items import BookItem
 
 
 class Crawler:
     wait_pool = set()
     used_pool = set()
-    is_write = False
-    is_online_data = False
+    is_write = False  # 是否重写已保存的图片和页面
 
-    def __init__(self, is_write, is_online_data):
+    def __init__(self, is_write):
         self.wait_pool.add('https://book.douban.com/top250')
         self.used_pool.clear()
         self.is_write = is_write
-        self.is_online_data = is_online_data
         print("==========================INIT DONE==========================")
 
     def start(self):
@@ -96,11 +94,12 @@ class Crawler:
     def download_page(self, html, page):
         if page is None or page == '':
             return
-        f = open(RESOURCE_PATH + "new_book_response/bookList_" + str(page) + ".html", "wb")
+        f = open(RESOURCE_PATH + "book_response/bookList_" + str(page) + ".html", "wb")
         f.write(html)
         f.close
 
     def download_picture(self, data, page):
+        print("===================START DOWNLOAD PICTURE================")
         if page is None or page == '':
             return
         patten = r'https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{7}.jpg|https://img[0-9].doubanio.com/view/subject/s/public/s[0-9]{8}.jpg'
@@ -113,14 +112,15 @@ class Crawler:
             print("Downloading Picture No.%d with url:%s" % (img, img_urls[img]))
             try:
                 urllib.request.urlretrieve(img_urls[img],
-                                           RESOURCE_PATH + "new_book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+                                           RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
             except urllib.error.HTTPError as e:
                 print(e.headers)
                 urllib.request.urlretrieve(img_urls[img],
-                                           RESOURCE_PATH + "new_book_img/img_" + str(page) + "_" + str(img) + ".jpg")
+                                           RESOURCE_PATH + "book_img/img_" + str(page) + "_" + str(img) + ".jpg")
             print("===========================SUCCESS===========================")
 
     def download_item(self, SAVE_PATH="./book_request/resource/book_data.xls"):
+        print("====================START DOWNLOAD DATA====================")
         book_list = self.parse_item()
         workbook = xlwt.Workbook(encoding="utf-8", style_compression=0)
         sheet = workbook.add_sheet("豆瓣读书top250", cell_overwrite_ok=True)
@@ -142,6 +142,7 @@ class Crawler:
         workbook.save(SAVE_PATH)
 
     def parse_item(self, RESOURCE_ROOT='./book_request/resource/book_response/'):
+        print("====================START PARSING ITEM====================")
         booklist = []
         for data in os.listdir(RESOURCE_ROOT):
             with open(RESOURCE_ROOT + data, 'r', encoding='UTF-8') as f:
@@ -162,21 +163,3 @@ class Crawler:
                         soup.find_all('tr', class_='item')[i].find_all('span', class_='pl')[0].text)
                     booklist.append(book)
         return booklist
-
-
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-             'Chrome/96.0.4664.110 Safari/537.36 '
-HEADER = {
-    'User-Agent': USER_AGENT,
-    'Referer': 'https://book.douban.com/top250',
-    'Cookie': 'bid=fLAdqpnsfRE; __utmc=30149280; __utmc=81379588; '
-              '__utmz=30149280.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; '
-              '__utmz=81379588.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; '
-              'push_noty_num=0; push_doumail_num=0; dbcl2="247235182:DmC9SsZ2iE4"; ck=0Tux; __utmv=30149280.24723; '
-              '_pk_ref.100001.3ac3=%5B%22%22%2C%22%22%2C1640579448%2C%22https%3A%2F%2Faccounts.douban.com%2F%22%5D; '
-              '_pk_ses.100001.3ac3=*; ap_v=0,6.0; __utma=30149280.1503170269.1640066250.1640321301.1640579448.4; '
-              '__utma=81379588.95857263.1640066250.1640321301.1640579448.4; __utmb=30149280.2.10.1640579448; '
-              '__utmb=81379588.2.10.1640579448; '
-              '_pk_id.100001.3ac3=021988dc59405135.1640066250.4.1640579466.1640324096. '
-}
-RESOURCE_PATH = './book_request/resource/'

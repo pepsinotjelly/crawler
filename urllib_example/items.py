@@ -1,8 +1,8 @@
 class BookItem:
-    name: str
-    info: str
-    star: float
-    quote: str
-    reader: str
-    image: str
+    name: str  # 书籍名称
+    info: str  # 相关信息
+    star: float  # 星级
+    quote: str  # 简介
+    reader: str  # 阅读人数
+    image: str  # 封面图片
     pass

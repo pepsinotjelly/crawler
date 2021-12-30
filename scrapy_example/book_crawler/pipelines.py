@@ -51,34 +51,3 @@ class TutorialPipeline:
         else:
             pass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def get_media_requests(self, item, info):
-    #     if isinstance(item, BookItem):
-    #         item['actors'] = item['actors'].replace(' ', '')
-    #         item['actors'] = item['actors'].replace('\n', '')
-    #         yield Request(item['image_url'])
-    #
-    # def file_name(self, request, respond, info):
-    #     return request.url.split('/')[-1]
-    #
-    # def item_completed(self, results, item, info):
-    #     paths = [result['path'] for status, result in results if status]
-    #     if not paths:
-    #         raise DropItem('Failed to download photo.')
-    #     else:
-    #         os.rename(image_store + '/' + paths[0], image_store + '/' + item['name'] + '.jpg')
-    #     return item
