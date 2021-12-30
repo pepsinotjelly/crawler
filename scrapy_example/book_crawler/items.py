@@ -11,8 +11,7 @@ class BookItem(scrapy.Item):
     name = scrapy.Field()
     info = scrapy.Field()  # 出版信息
     star = scrapy.Field()  # 星级
-    quote = scrapy.Field()
-    image = scrapy.Field()
-    image_url = scrapy.Field()
-    image_path = scrapy.Field()
+    # quote = scrapy.Field()
+    # image = scrapy.Field()
+    reader = scrapy.Field()
     pass

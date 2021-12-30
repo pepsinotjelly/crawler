@@ -16,15 +16,6 @@ NEWSPIDER_MODULE = 'book_crawler.spiders'
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ' \
              'AppleWebKit/537.36 (KHTML, like Gecko) ' \
              'Chrome/96.0.4664.55 Safari/537.36 '
-COOKIE = 'bid=fLAdqpnsfRE; __utmc=30149280; __utmc=81379588; ' \
-         '_pk_ref.100001.3ac3=%5B%22%22%2C%22%22%2C1640321301%2C%22https%3A%2F%2Faccounts.douban.com%2F%22%5D; ' \
-         '_pk_ses.100001.3ac3=*; __utma=30149280.1503170269.1640066250.1640083125.1640321301.3; ' \
-         '__utmz=30149280.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; ' \
-         '__utma=81379588.95857263.1640066250.1640083125.1640321301.3; ' \
-         '__utmz=81379588.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; ' \
-         'push_noty_num=0; push_doumail_num=0; dbcl2="247235182:DmC9SsZ2iE4"; ck=0Tux; ' \
-         '__utmb=81379588.4.10.1640321301; _pk_id.100001.3ac3=021988dc59405135.1640066250.3.1640323617.1640083125.; ' \
-         '__utmv=30149280.24723; __utmb=30149280.6.10.1640321301 '
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
@@ -47,21 +38,14 @@ ROBOTSTXT_OBEY = False
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
+    'Referer': 'https://book.douban.com/top250',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
               'application/signed-exchange;v=b3;q=0.9',
     'Accept-Language': 'zh-CN,zh;q=0.9',
     'User_Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) '
                   'Chrome/96.0.4664.55 Safari/537.36 ',
-    'Cookie': 'bid=fLAdqpnsfRE; __utmc=30149280; __utmc=81379588; '
-              '_pk_ref.100001.3ac3=%5B%22%22%2C%22%22%2C1640321301%2C%22https%3A%2F%2Faccounts.douban.com%2F%22%5D; '
-              '_pk_ses.100001.3ac3=*; __utma=30149280.1503170269.1640066250.1640083125.1640321301.3; '
-              '__utmz=30149280.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; '
-              '__utma=81379588.95857263.1640066250.1640083125.1640321301.3; '
-              '__utmz=81379588.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; '
-              'push_noty_num=0; push_doumail_num=0; dbcl2="247235182:DmC9SsZ2iE4"; ck=0Tux; '
-              '__utmb=81379588.4.10.1640321301; '
-              '_pk_id.100001.3ac3=021988dc59405135.1640066250.3.1640323617.1640083125.; __utmv=30149280.24723; '
-              '__utmb=30149280.6.10.1640321301 '
+    'Cookie': 'bid=fLAdqpnsfRE; __utmc=30149280; __utmc=81379588; __utmz=30149280.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; __utmz=81379588.1640321301.3.2.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; push_noty_num=0; push_doumail_num=0; dbcl2="247235182:DmC9SsZ2iE4"; ck=0Tux; __utmv=30149280.24723; gr_user_id=2b68d25e-9fcb-4d5c-b90f-bf05cbf79cf7; _vwo_uuid_v2=D5E8218A9793256FF71245ED52E39BDF9|2a74fefbf788c16e344afb4c1124a25c; __gads=ID=d6675e3f174da4ab-22625b018bcf006c:T=1640594000:RT=1640594000:S=ALNI_MbNBRxMybNq7JbYb9C_ZLKVQjsxBA; ct=y; _pk_ref.100001.3ac3=%5B%22%22%2C%22%22%2C1640767603%2C%22https%3A%2F%2Faccounts.douban.com%2F%22%5D; _pk_id.100001.3ac3=021988dc59405135.1640066250.13.1640767603.1640747536.; __utma=30149280.1503170269.1640066250.1640747536.1640767603.13; __utma=81379588.95857263.1640066250.1640747536.1640767603.13'
+
 }
 
 # Enable or disable spider middlewares

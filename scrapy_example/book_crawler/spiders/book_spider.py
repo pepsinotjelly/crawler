@@ -13,6 +13,7 @@ import scrapy
 from scrapy.spiders import Rule, CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 from scrapy_example.book_crawler.items import BookItem
+import scrapy_example.util as util
 
 
 def image_filter(image_list):
@@ -37,14 +38,17 @@ class TutorialSpider(CrawlSpider, ABC):
         name_list = book_item.xpath('//div[@class="pl2"]/a/@title').extract()
         info_list = book_item.xpath('//p[@class="pl"]/text()').extract()  # 出版信息
         star_list = book_item.xpath('//span[@class="rating_nums"]/text()').extract()  # 星级
-        quote_list = book_item.xpath('//span[@class="inq"]/text()').extract()
-        image_list = image_filter(book_item.xpath('//img/@src').extract())
+        reader_list = book_item.xpath('//span[@class="pl"]').extract()
+
+        # quote_list = book_item.xpath('//span[@class="inq"]/text()').extract()
+        # image_list = image_filter(book_item.xpath('//img/@src').extract())
 
         for i in range(len(book_item)):
             book = BookItem()
             book['name'] = name_list[i]
             book['info'] = info_list[i]
             book['star'] = star_list[i]
-            book['quote'] = quote_list[i]
-            book['image'] = image_list[i]
+            book['reader'] = util.parse_number(reader_list[i])
+            # book['quote'] = quote_list[i]
+            # book['image'] = image_list[i]
             yield book

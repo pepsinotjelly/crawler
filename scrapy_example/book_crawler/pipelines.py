@@ -8,15 +8,63 @@
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from scrapy_example.book_crawler import settings
-
+import xlwt
+import scrapy_example.util as util
 from scrapy_example.book_crawler.items import BookItem
 
 image_store = settings.IMAGES_STORE
 
 
 class TutorialPipeline:
+    def __init__(self):
+        self.workbook = None
+        self.sheet = None
+        self.pos = 1
+
+    def open_spider(self, spider):
+        if util.is_write:
+            self.workbook = xlwt.Workbook(encoding="utf-8", style_compression=0)  # 开启爬虫时调用
+            self.sheet = self.workbook.add_sheet("豆瓣读书top250", cell_overwrite_ok=True)
+            self.sheet.write(0, 0, 'number')
+            self.sheet.write(0, 1, 'name')
+            self.sheet.write(0, 2, 'info')
+            self.sheet.write(0, 3, 'star')
+            self.sheet.write(0, 4, 'reader')
+            # self.sheet.write(0, 4, 'quote')
+
+    def close_spider(self, spider):
+        if util.is_write:
+            self.workbook.save("./book_crawler/resource/book_data.xls")
+        util.show(RESOURCE_ROOT="./book_crawler/resource/")
+
     def process_item(self, item, spider):
-        return item
+        if util.is_write:
+            print("=======================SAVING NO.%d=========================" % (self.pos))
+            self.sheet.write(self.pos, 0, self.pos)
+            self.sheet.write(self.pos, 1, item['name'])
+            self.sheet.write(self.pos, 2, item['info'])
+            self.sheet.write(self.pos, 3, item['star'])
+            # self.sheet.write(self.pos, 4, item['quote'])
+            self.sheet.write(self.pos, 4, item['reader'])
+            self.pos += 1
+            return item
+        else:
+            pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # def get_media_requests(self, item, info):
     #     if isinstance(item, BookItem):
