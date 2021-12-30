@@ -3,9 +3,6 @@ import pandas
 import xlrd
 
 
-# import pyYaml
-
-
 def show(RESOURCE_ROOT="./book_request/resource/"):
     data = pandas.read_excel(RESOURCE_ROOT + 'book_data.xls')
     x1 = data['number']
