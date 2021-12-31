@@ -40,15 +40,10 @@ class TutorialSpider(CrawlSpider, ABC):
         star_list = book_item.xpath('//span[@class="rating_nums"]/text()').extract()  # 星级
         reader_list = book_item.xpath('//span[@class="pl"]').extract()
 
-        # quote_list = book_item.xpath('//span[@class="inq"]/text()').extract()
-        # image_list = image_filter(book_item.xpath('//img/@src').extract())
-
         for i in range(len(book_item)):
             book = BookItem()
             book['name'] = name_list[i]
             book['info'] = info_list[i]
             book['star'] = star_list[i]
             book['reader'] = util.parse_number(reader_list[i])
-            # book['quote'] = quote_list[i]
-            # book['image'] = image_list[i]
             yield book

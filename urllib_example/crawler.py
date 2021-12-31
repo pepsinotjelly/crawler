@@ -130,6 +130,8 @@ class Crawler:
         sheet.write(0, 3, 'star')
         sheet.write(0, 4, 'quote')
         sheet.write(0, 5, 'reader')
+        sheet.write(0, 6, 'date')
+        sheet.write(0, 7, 'price')
         for i in range(len(book_list)):
             print("=======================SAVING NO.%d=========================" % (i + 1))
             book = book_list[i]
@@ -139,6 +141,8 @@ class Crawler:
             sheet.write(i + 1, 3, book.star)
             sheet.write(i + 1, 4, book.quote)
             sheet.write(i + 1, 5, book.reader)
+            sheet.write(i + 1, 6, book.date)
+            sheet.write(i + 1, 7, book.price)
         workbook.save(SAVE_PATH)
 
     def parse_item(self, RESOURCE_ROOT='./book_request/resource/book_response/'):
@@ -161,5 +165,8 @@ class Crawler:
                         book.quote = ""
                     book.reader = utils.parse_number(
                         soup.find_all('tr', class_='item')[i].find_all('span', class_='pl')[0].text)
+                    other_information = utils.parse_price_and_date(book.info)
+                    book.price = other_information.get('price')
+                    book.date = other_information.get('date')
                     booklist.append(book)
         return booklist
