@@ -1,0 +1,6 @@
+venv/
+.idea/
+
+*.jpg
+*.html
+*.xls
